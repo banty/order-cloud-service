@@ -5,7 +5,7 @@ using EasyOrder.Domain.Model;
 
 namespace EasyOrder.Application.Repositories
 {
-	public interface IOrderRepository:IRepository
+	public interface IOrderRepository:IRepository<Order>
 	{
 		Task AddOrder(Order order);
 		Task UpdateOrder(Order order);

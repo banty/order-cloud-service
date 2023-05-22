@@ -6,29 +6,30 @@ namespace EasyOrder.Application.Common.Behaviours
 {
 	public class ValidationPiplines<TRequest,TResponse>:IPipelineBehavior<TRequest,TResponse> where TRequest: notnull
 	{
-		public ValidationPiplines(AbstractValidator<TRequest> validator)
+		public ValidationPiplines(IEnumerable<IValidator<TRequest>> validators)
 		{
-            Validator = validator;
+            Validators = validators;
         }
 
-        public AbstractValidator<TRequest> Validator { get; }
+		private readonly IEnumerable<IValidator<TRequest>> Validators;
 
-        public Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+        public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
 
-
-				var validationResult=Validator.Validate(request);
-				if(!validationResult.IsValid)
+			if (Validators.Any())
+			{
+				var validationResults = await Task.WhenAll( Validators.Select(v=>v.ValidateAsync(new ValidationContext<TRequest>(request),cancellationToken)));
+				var faliures = validationResults.Where(t => !t.IsValid)
+					.SelectMany(t => t.Errors)
+					.Distinct()
+					.ToList();
+				if (faliures.Any())
 				{
-				var faliures = validationResult.Errors;
-
-				var errors = faliures.GroupBy(t => t.PropertyName).Select(k => new {
-					PropertyName=k.Key,
-					Errors = k.Select(t=>t.ErrorMessage).ToArray()
-				}).ToDictionary(x => x.PropertyName, x => x.Errors);
-				throw new ValidationExceptions(errors);
+					
+					throw new ValidationExceptions(faliures);
 				}
-			return next();
+			}
+			return await next();
         }
     }
 }

@@ -8,7 +8,7 @@ namespace EasyOrder.Domain.Model
 		public DateTime OrderDate { get; set; }
 		public string? Customer { get; set; }
 		public string? Status { get; set; }
-		public virtual List<OrderItem> Items { get; set; } = new();
+		public virtual List<OrderItem> OrderItems { get; set; } = new();
 		public Order()
 		{
 		}

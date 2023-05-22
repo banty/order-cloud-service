@@ -8,10 +8,12 @@ namespace EasyOrder.Application.Commands
 		{
 			RuleFor(t => t.Customer)
 				.NotNull()
+				.NotEmpty()
 				.MaximumLength(200);
 			RuleFor(t => t.Address)
+				.NotEmpty()
 				.NotNull()
-				.MinimumLength(500);
+				.MaximumLength(500);
 				
 		}
 	}

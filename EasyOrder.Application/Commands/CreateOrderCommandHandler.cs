@@ -1,4 +1,5 @@
 ﻿using System;
+using AutoMapper;
 using EasyOrder.Application.Abstract;
 using EasyOrder.Application.Common.Exceptions;
 using EasyOrder.Application.Repositories;
@@ -11,14 +12,16 @@ namespace EasyOrder.Application.Commands
 	{
         private readonly IOrderRepository orderRepository;
         private readonly IDateTime dateTime;
+        private readonly IMapper mapper;
 
-        public CreateOrderCommandHandler(IOrderRepository orderRepository, IDateTime dateTime)
+        public CreateOrderCommandHandler(IOrderRepository orderRepository, IDateTime dateTime,IMapper mapper)
 		{
             this.orderRepository = orderRepository;
             this.dateTime = dateTime;
+            this.mapper = mapper;
         }
 
-        public Task<OrderDto> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+        public async Task<OrderDto> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new InvalidRequest();
@@ -27,17 +30,19 @@ namespace EasyOrder.Application.Commands
             order.OrderDate = dateTime.Now;
             foreach(var itm in request.Items)
             {
-                order.Items.Add(new OrderItem {
+                order.OrderItems.Add(new OrderItem {
                     Price = itm.Price,
                     Quantity = itm.Quantity,
                     SKU = itm.SKU
                 });
             }
 
-            orderRepository.AddOrder(order);
-            orderRepository.UnitOfWork.SaveEntityChangesAsync(cancellationToken);
+           await orderRepository.AddOrder(order);
+          await  orderRepository.UnitOfWork.SaveEntityChangesAsync(cancellationToken);
 
+           var orderDto= mapper.Map<OrderDto>(order);
 
+            return orderDto;
             
         }
     }
