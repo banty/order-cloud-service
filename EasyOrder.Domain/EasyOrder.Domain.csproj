@@ -14,10 +14,12 @@
     <None Remove="Common\" />
     <None Remove="Model\" />
     <None Remove="Events\" />
+    <None Remove="Exceptions\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Common\" />
     <Folder Include="Model\" />
     <Folder Include="Events\" />
+    <Folder Include="Exceptions\" />
   </ItemGroup>
 </Project>
